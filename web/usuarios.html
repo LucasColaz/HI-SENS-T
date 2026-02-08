@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>HI-SENS – Usuarios</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <header class="header-main">
+    <div class="header-title">
+      HI-Sens | <span class="user-role-display"></span>
+    </div>
+    <div class="header-user">
+      <a href="#">Configurar Usuario</a>
+      <a href="login.html">Cerrar Sesión</a>
+    </div>
+  </header>
+  
+  <nav class="nav-main">
+    <a href="index.html">Inicio</a>
+    <a href="config.html" data-role="Admin">Configuración</a>
+    <a href="nodos.html" data-role="Admin">Nodos</a>
+    <a href="registros.html" data-role="Admin">Registros</a>
+    <a href="usuarios.html" class="active" data-role="Admin">Usuarios</a>
+    <a href="alarmas.html" data-role="Tecnico">Alarmas</a>
+  </nav>
+
+  <main>
+    <div class="content-box">
+      <div class="page-header-actions">
+        <h1>Gestión de Usuarios</h1>
+        <button class="btn btn-primary" id="create-user-btn">Crear Nuevo Usuario</button>
+      </div>
+      <p>Configure los usuarios, sus roles y los canales de notificación.</p>
+
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Usuario</th>
+            <th>Rol</th>
+            <th>Puesto</th>
+            <th>Email</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="user-table-body">
+          <tr><td colspan="6" style="text-align: center;">Cargando usuarios...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <div class="modal-backdrop hidden" id="user-modal-backdrop"></div>
+  <div class="modal large hidden" id="user-modal">
+    <div class="modal-header">
+      <h2 id="user-modal-title">Editar Usuario</h2>
+      <button class="modal-close-btn" id="user-modal-close-btn">&times;</button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="tab-nav">
+        <button class="tab-link active" data-tab="user-tab-detalles">1. Detalles y Canales</button>
+        <button class="tab-link" data-tab="user-tab-nodos">2. Suscripciones de Nodos</button>
+      </div>
+
+      <div class="tab-content">
+        <div class="tab-pane active" id="user-tab-detalles">
+          <form class="styled-form" id="user-details-form">
+            <div class="form-grid-2">
+              <div class="input-group"><label for="user-nombre">Nombre Completo</label><input type="text" id="user-nombre"></div>
+              <div class="input-group"><label for="user-usuario">Usuario (login)</label><input type="text" id="user-usuario" disabled></div>
+              <div class="input-group"><label for="user-rol">Rol</label><select id="user-rol"><option value="Admin">Admin (Control Total)</option><option value="Supervisor">Supervisor (Ver y Configurar)</option><option value="Tecnico">Técnico (Ver y Reconocer Alarmas)</option><option value="Visitante">Visitante (Solo Ver)</option></select></div>
+              <div class="input-group"><label for="user-puesto">Puesto / Cargo</label><input type="text" id="user-puesto"></div>
+            </div>
+            <hr class="form-divider">
+            <h3>Canales de Notificación</h3>
+            <div class="form-grid-2">
+              <div class="input-group"><label for="user-email">Email</label><input type="email" id="user-email"></div>
+              <div class="input-group"><label for="user-telefono">Teléfono (para SMS)</label><input type="text" id="user-telefono"></div>
+            </div>
+
+            <div class="create-only-fields hidden">
+              <hr class="form-divider">
+              <h3>Contraseña Temporal</h3>
+              <div class="form-grid-2">
+                <div class="input-group">
+                  <label for="user-password">Contraseña Temporal</label>
+                  <input type="password" id="user-password">
+                  <ul class="password-requirements">
+                    <li id="modal-req-length">Al menos 8 caracteres</li>
+                    <li id="modal-req-upper">Al menos una letra mayúscula (A-Z)</li>
+                    <li id="modal-req-number">Al menos un número (0-9)</li>
+                  </ul>
+                </div>
+                <div class="input-group"><label for="user-password-confirm">Confirmar Contraseña</label><input type="password" id="user-password-confirm"></div>
+              </div>
+            </div>
+            
+            <div id="user-modal-error" class="error-message hidden" style="margin-top: 15px;"></div>
+          </form>
+        </div>
+        
+        <div class="tab-pane" id="user-tab-nodos">
+          <p>Seleccione a qué nodos y sensores se suscribirá este usuario.</p>
+          <div class="subscription-list">
+            <div class="node-group">
+              <div class="input-group-checkbox node-parent">
+                <input type="checkbox" id="sub-node-1">
+                <label for="sub-node-1"><strong>ESP32-LAB-01 (Laboratorio)</strong></label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="user-modal-cancel-btn">Cancelar</button>
+      <button class="btn btn-primary" id="user-modal-save-btn">Guardar Cambios</button>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="delete-modal-backdrop"></div>
+  <div class="modal hidden" id="delete-modal">
+    <div class="modal-header">
+      <h2 id="delete-modal-title">Confirmar Borrado</h2>
+      <button class="modal-close-btn" id="delete-modal-close-btn">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p>Estás a punto de borrar al usuario: <strong id="delete-user-span"></strong>.</p>
+      <p>Esta acción no se puede deshacer. Para confirmar, por favor ingresá tu contraseña de administrador.</p>
+      <form class="modal-form" id="delete-form">
+        <div class="input-group">
+          <label for="admin-password">Tu Contraseña (Admin)</label>
+          <input type="password" id="admin-password" required>
+        </div>
+        <div id="delete-modal-error" class="error-message hidden"></div>
+        <div class="modal-footer" style="padding: 0; margin-top: 20px; border: none;">
+            <button type="button" class="btn btn-secondary" id="delete-modal-cancel-btn">Cancelar</button>
+            <button type="submit" class="btn btn-danger" id="delete-modal-confirm-btn">Confirmar Borrado</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <script src="auth-nav.js"></script>
+  <script src="usuarios.js"></script>
+</body>
+</html>

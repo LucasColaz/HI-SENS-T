@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>HI-SENS – Mi Perfil</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <header class="header-main">
+    <div class="header-title">
+      HI-Sens | <span class="user-role-display"></span>
+    </div>
+    <div class="header-user">
+      <a href="perfil.html" class="active-link">Configurar Usuario</a>
+      <a href="login.html">Cerrar Sesión</a>
+    </div>
+  </header>
+  
+  <nav class="nav-main">
+    <a href="index.html">Inicio</a>
+    <a href="config.html" data-role="Admin">Configuración</a>
+    <a href="nodos.html" data-role="Admin">Nodos</a>
+    <a href="registros.html" data-role="Admin">Registros</a>
+    <a href="usuarios.html" data-role="Admin">Usuarios</a>
+    <a href="alarmas.html" data-role="Tecnico">Alarmas</a>
+  </nav>
+
+  <main>
+    <div class="content-box">
+      <h1>Mi Perfil</h1>
+      <p>Gestiona tu información personal y seguridad.</p>
+
+      <div class="config-grid">
+        
+        <div class="config-card">
+          <h2><span class="config-icon">👤</span> Mis Datos</h2>
+          <form class="styled-form">
+            <div class="input-group">
+              <label>Nombre Completo</label>
+              <input type="text" id="profile-nombre" disabled>
+            </div>
+            <div class="input-group">
+              <label>Usuario (Login)</label>
+              <input type="text" id="profile-username" disabled>
+            </div>
+            <div class="input-group">
+              <label>Email</label>
+              <input type="text" id="profile-email" disabled>
+            </div>
+            <div class="input-group">
+              <label>Rol & Puesto</label>
+              <input type="text" id="profile-rol-puesto" disabled>
+            </div>
+            <div class="input-group">
+              <label>Mis Suscripciones (Áreas)</label>
+              <div id="profile-subs" style="padding: 10px; background: #f9f9f9; border-radius: 4px; color: #555;">
+                Cargando...
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="config-card">
+          <h2><span class="config-icon">🔒</span> Cambiar Contraseña</h2>
+          <form class="styled-form" id="change-pass-form">
+            <div class="input-group">
+              <label for="new-pass">Nueva Contraseña</label>
+              <input type="password" id="new-pass" required>
+              <ul class="password-requirements">
+                <li id="req-length">Al menos 8 caracteres</li>
+                <li id="req-upper">Al menos una letra mayúscula (A-Z)</li>
+                <li id="req-number">Al menos un número (0-9)</li>
+              </ul>
+            </div>
+            <div class="input-group">
+              <label for="confirm-pass">Confirmar Nueva Contraseña</label>
+              <input type="password" id="confirm-pass" required>
+            </div>
+            
+            <div id="pass-error" class="error-message hidden" style="margin-bottom: 15px;"></div>
+            
+            <button type="submit" class="btn btn-primary">Actualizar Contraseña</button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </main>
+  
+  <script src="auth-nav.js"></script>
+  <script src="perfil.js"></script>
+</body>
+</html>

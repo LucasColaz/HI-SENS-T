@@ -1,0 +1,21 @@
+
+
+services:
+  db:
+    # Imagen oficial de TimescaleDB (PostgreSQL 16)
+    image: timescale/timescaledb-ha:pg16
+    container_name: hisens_db
+    ports:
+      # Expone el puerto 5432 de la base de datos a tu máquina local
+      - "5432:5432"
+    volumes:
+      # Monta un volumen para que los datos persistan aunque apagues el contenedor
+      - ./pg_data:/var/lib/postgresql/data
+      # Monta el script de inicialización
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      # Credenciales de la base de datos
+      - POSTGRES_USER=hisens_user
+      - POSTGRES_PASSWORD=hisens_pass
+      - POSTGRES_DB=hisens_db
+    restart: always

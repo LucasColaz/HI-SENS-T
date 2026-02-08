@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>HI-SENS – Nodos</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Estilos específicos para esta página */
+    .btn-notification {
+      background-color: #ffc107; color: #333; border: none; font-weight: bold;
+      display: flex; align-items: center; gap: 8px; animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(255, 193, 7, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header-main">
+    <div class="header-title">HI-Sens | <span class="user-role-display"></span></div>
+    <div class="header-user">
+      <a href="perfil.html">Configurar Usuario</a>
+      <a href="login.html">Cerrar Sesión</a>
+    </div>
+  </header>
+  
+  <nav class="nav-main">
+    <a href="index.html">Inicio</a>
+    <a href="config.html" data-role="Admin">Configuración</a>
+    <a href="nodos.html" class="active" data-role="Admin">Nodos</a>
+    <a href="registros.html" data-role="Admin">Registros</a>
+    <a href="usuarios.html" data-role="Admin">Usuarios</a>
+    <a href="alarmas.html" data-role="Tecnico">Alarmas</a>
+  </nav>
+
+  <main>
+    <div class="content-box">
+      <div class="page-header-actions">
+        <h1>Gestión de Nodos (Hardware)</h1>
+        <button class="btn btn-notification hidden" id="incoming-nodes-btn">
+          🔔 Dispositivos Detectados (<span id="incoming-count">0</span>)
+        </button>
+      </div>
+      
+      <div class="nodos-toolbar">
+        <div class="toolbar-group">
+          <label for="area-select">Filtrar por Área:</label>
+          <select id="area-select" class="styled-select"><option value="">Todas las Áreas</option></select>
+        </div>
+        <div class="toolbar-group">
+          <label for="node-select">Filtrar por Nodo:</label>
+          <select id="node-select" class="styled-select"><option value="">Todos los Nodos</option></select>
+        </div>
+        <div class="toolbar-group" style="flex-grow: 2;">
+          <label for="sensor-search">Buscar Sensor:</label>
+          <input type="search" id="sensor-search" class="styled-search" placeholder="ID, nombre, tipo...">
+        </div>
+      </div>
+
+      <div id="nodos-container"></div>
+    </div>
+  </main>
+
+  <datalist id="areas-list"></datalist>
+
+  <div class="modal-backdrop hidden" id="discovery-backdrop"></div>
+  <div class="modal hidden" id="discovery-modal">
+    <div class="modal-header">
+      <h2>Dispositivos Detectados</h2>
+      <button class="modal-close-btn" id="discovery-close">&times;</button>
+    </div>
+    <div class="modal-body" id="discovery-list-container"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="discovery-cancel">Cerrar</button>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="edit-node-backdrop"></div>
+  <div class="modal hidden" id="edit-node-modal">
+    <div class="modal-header">
+      <h2>Editar Nodo: <span id="edit-node-id-display"></span></h2>
+      <button class="modal-close-btn" id="edit-node-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form class="styled-form">
+        <input type="hidden" id="edit-node-id-hidden">
+        <div class="input-group">
+          <label>Área (Obligatorio para activar)</label>
+          <input type="text" id="edit-node-area" list="areas-list" placeholder="Ej: Laboratorio">
+        </div>
+        <div class="form-grid-2">
+            <div class="input-group">
+              <label>Dirección</label>
+              <input type="text" id="edit-node-direccion">
+            </div>
+            <div class="input-group">
+              <label>Piso</label>
+              <input type="text" id="edit-node-piso">
+            </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+      <div style="display:flex; gap:5px;">
+          <button class="btn btn-danger" id="edit-node-delete" style="background:#dc3545; color:white;">🗑️ Eliminar</button>
+          <button class="btn" id="edit-node-replace" style="background:#ffc107; color:#333;">🔄 Reemplazar</button>
+      </div>
+      <div style="display:flex; gap:10px;">
+          <button class="btn btn-secondary" id="edit-node-cancel">Cancelar</button>
+          <button class="btn btn-primary" id="edit-node-save">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="replace-backdrop"></div>
+  <div class="modal hidden" id="replace-modal">
+    <div class="modal-header">
+      <h2>Reemplazar Hardware</h2>
+      <button class="modal-close-btn" id="replace-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p>Vas a reemplazar el nodo <strong id="replace-old-id"></strong>.</p>
+      <p style="font-size:0.9em; color:#666;">Se transferirán todos los sensores e historial al nuevo dispositivo.</p>
+      <div class="input-group" style="margin-top:20px;">
+        <label>Selecciona Nuevo Dispositivo (Pendiente)</label>
+        <select id="replace-new-select" class="styled-select"><option>Cargando...</option></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="replace-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="replace-confirm" style="background:#ffc107; color:#000;">Confirmar Cambio</button>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="config-modal-backdrop"></div>
+  <div class="modal hidden" id="config-modal">
+    <div class="modal-header">
+      <h2 id="modal-title">Configurar Sensor</h2>
+      <button class="modal-close-btn" id="modal-close-btn">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form class="modal-form">
+        <input type="hidden" id="modal-sensor-id">
+        <p>Sensor: <strong id="modal-sensor-nombre"></strong></p>
+        <div class="input-group">
+          <label>Límite Alto</label>
+          <input type="text" id="modal-lim-alto">
+        </div>
+        <div class="input-group">
+          <label>Límite Bajo</label>
+          <input type="text" id="modal-lim-bajo">
+        </div>
+        <div class="input-group-checkbox">
+          <input type="checkbox" id="modal-visible">
+          <label for="modal-visible">Habilitar en Dashboard</label>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer" style="display: flex; justify-content: space-between;">
+      <button class="btn btn-danger" id="modal-delete-sensor-btn" style="background:#dc3545; color:white;">Eliminar</button>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-secondary" id="modal-cancel-btn">Cancelar</button>
+        <button class="btn btn-primary" id="modal-save-btn">Guardar</button>
+      </div>
+    </div>
+  </div>
+  
+  <script src="auth-nav.js"></script>
+  <script src="nodos.js"></script>
+</body>
+</html>

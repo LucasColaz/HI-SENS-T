@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>HI-SENS – Alarmas</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <header class="header-main">
+    <div class="header-title">
+      HI-Sens | <span class="user-role-display"></span>
+    </div>
+    <div class="header-user">
+      <a href="perfil.html">Configurar Usuario</a>
+      <a href="login.html">Cerrar Sesión</a>
+    </div>
+  </header>
+  <nav class="nav-main">
+    <a href="index.html">Inicio</a>
+    <a href="config.html" data-role="Admin">Configuración</a>
+    <a href="nodos.html" data-role="Admin">Nodos</a>
+    <a href="registros.html" data-role="Admin">Registros</a>
+    <a href="usuarios.html" data-role="Admin">Usuarios</a>
+    <a href="alarmas.html" class="active" data-role="Tecnico">Alarmas</a>
+  </nav>
+
+  <main>
+    <div class="content-box">
+      <h1>Registro de Eventos del Sistema</h1>
+      <p>Historial de alarmas y eventos de conexión.</p>
+
+      <form class="log-filter-bar" id="alarm-filter-form">
+        
+        <div class="toolbar-group">
+          <label for="filter-desde">Desde:</label>
+          <input type="date" id="filter-desde" class="styled-input">
+        </div>
+        
+        <div class="toolbar-group">
+          <label for="filter-hasta">Hasta:</label>
+          <input type="date" id="filter-hasta" class="styled-input">
+        </div>
+        
+        <div class="toolbar-group" style="flex-grow: 2;">
+          <label for="filter-sensor">Sensor:</label>
+          <select id="filter-sensor" class="styled-select">
+            <option value="todos">Todos los Sensores</option>
+            </select>
+        </div>
+        
+        <div class="toolbar-group filter-button-group" style="display: flex; gap: 10px;">
+             <button type="submit" class="btn btn-primary" id="filter-btn">Filtrar</button>
+            <button type="button" class="btn btn-success" id="export-btn" style="background-color: #28a745; border-color: #28a745; color: white;">⬇ Exportar CSV</button>
+        </div>
+      </form>
+
+      <div class="tab-nav">
+        <button class="tab-link active" data-tab="tab-alarmas">Historial de Alarmas</button>
+        <button class="tab-link" data-tab="tab-conexiones">Eventos de Conexión</button>
+      </div>
+
+      <div class="tab-content">
+
+        <div class="tab-pane active" id="tab-alarmas">
+          <table class="styled-table">
+            <thead>
+              <tr>
+                <th>Fecha y Hora</th>
+                <th>Sensor</th>
+                <th>Evento</th>
+                <th>Detalle</th>
+              </tr>
+            </thead>
+            <tbody id="alarmas-table-body">
+              <tr><td colspan="4" style="text-align: center;">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="tab-pane" id="tab-conexiones">
+          <table class="styled-table">
+            <thead>
+              <tr>
+                <th>Fecha y Hora</th>
+                <th>Sensor</th>
+                <th>Evento</th>
+                <th>Detalle</th>
+              </tr>
+            </thead>
+            <tbody id="conexiones-table-body">
+              <tr><td colspan="4" style="text-align: center;">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div> 
+    </div>
+  </main>
+
+  <script src="auth-nav.js"></script>
+  <script src="alarmas.js"></script>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>HI-SENS – Dashboard General</title>
+
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+  /* Animación del Latido */
+  .pulse-dot {
+    height: 10px; width: 10px;
+    background-color: #28a745;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+    animation: pulse-green 2s infinite;
+  }
+  
+  @keyframes pulse-green {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+  }
+
+  /* Botón de Sonido */
+  #btn-sound-toggle {
+    background: #333; color: white; border: none; padding: 5px 10px;
+    border-radius: 4px; cursor: pointer; font-size: 0.8rem;
+  }
+  #btn-sound-toggle.sound-on { background: #28a745; } /* Verde cuando está ON */
+  #btn-sound-toggle.sound-active { background: #dc3545; animation: shake 0.5s infinite; } /* Rojo y tiembla si suena */
+
+  @keyframes shake {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    10% { transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { transform: translate(-3px, 0px) rotate(1deg); }
+    30% { transform: translate(3px, 2px) rotate(0deg); }
+    40% { transform: translate(1px, -1px) rotate(1deg); }
+    50% { transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { transform: translate(-3px, 1px) rotate(0deg); }
+    70% { transform: translate(3px, 1px) rotate(-1deg); }
+    80% { transform: translate(-1px, -1px) rotate(1deg); }
+    90% { transform: translate(1px, 2px) rotate(0deg); }
+    100% { transform: translate(1px, -2px) rotate(-1deg); }
+  }
+</style>
+</head>
+<body>
+
+<header class="header-main">
+  <div class="header-title">
+    HI-Sens | <span class="user-role-display"></span>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 15px; margin-right: auto; margin-left: 20px;">
+    
+    <div id="system-heartbeat" title="Estado de Conexión" 
+         style="display: flex; align-items: center; gap: 5px; color: #28a745; font-weight: bold; font-size: 0.9rem;">
+       <span class="pulse-dot">●</span> Sistema Online
+    </div>
+
+    <button id="btn-sound-toggle" class="btn-sound-off" title="Activar/Desactivar Alarma Sonora">
+      🔇 Sonido OFF
+    </button>
+  </div>
+
+  <div class="header-user">
+    <a href="perfil.html">Configurar Usuario</a>
+    <a href="login.html">Cerrar Sesión</a>
+  </div>
+</header>
+  
+  <nav class="nav-main">
+    <a href="index.html" class="active">Inicio</a>
+    <a href="config.html" data-role="Admin">Configuración</a>
+    <a href="nodos.html" data-role="Admin">Nodos</a>
+    <a href="registros.html" data-role="Admin">Registros</a>
+    <a href="usuarios.html" data-role="Admin">Usuarios</a>
+    <a href="alarmas.html" data-role="Tecnico">Alarmas</a>
+  </nav>
+
+  <main id="contenedor" class="contenedor-status"></main>
+
+  <div class="modal-backdrop hidden" id="graph-modal-backdrop"></div>
+  <div class="modal large hidden" id="graph-modal">
+    <div class="modal-header">
+      <h2 id="graph-modal-title">Histórico de 1 Hora</h2>
+      <button class="modal-close-btn" id="graph-modal-close-btn">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="chart-wrapper-modal">
+        <canvas id="history-chart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="config-modal-backdrop"></div>
+  <div class="modal hidden" id="config-modal">
+    <div class="modal-header">
+      <h2 id="config-modal-title">Ajustar Límites de Alarma</h2>
+      <button class="modal-close-btn" id="config-modal-close-btn">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form class="modal-form" id="config-form">
+        <input type="hidden" id="config-sensor-id">
+        <p>Editando sensor: <strong id="config-sensor-nombre"></strong></p>
+        <div class="input-group">
+          <label for="config-lim-alto">Límite Alto</label>
+          <input type="text" id="config-lim-alto">
+        </div>
+        <div class="input-group">
+          <label for="config-lim-bajo">Límite Bajo</label>
+          <input type="text" id="config-lim-bajo">
+        </div>
+        <div class="input-group-checkbox" style="display:none;">
+          <input type="checkbox" id="config-visible">
+         <label for="config-visible">Visible en Dashboard</label>
+        </div>  
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="config-modal-cancel-btn">Cancelar</button>
+      <button class="btn btn-primary" id="config-modal-save-btn">Guardar Cambios</button>
+    </div>
+  </div>
+  
+  <script src="auth-nav.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

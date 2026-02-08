@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+psycopg2-binary
+python-socketio
+pydantic
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt==3.2.0
+python-multipart
+fastapi-mail
+requests
+APScheduler

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HI-SENS – Registros</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Estilos específicos para la barra de filtros y pestañas */
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+    .tab-btn { background: none; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; color: #666; border-radius: 5px 5px 0 0; }
+    .tab-btn.active { background-color: #e3f2fd; color: #007bff; border-bottom: 3px solid #007bff; }
+    .tab-btn:hover { background-color: #f8f9fa; }
+    
+    .filters-bar { display: flex; flex-wrap: wrap; gap: 15px; align-items: end; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    .filter-group { display: flex; flex-direction: column; gap: 5px; }
+    .filter-group label { font-size: 0.85rem; font-weight: bold; color: #555; }
+    
+    /* Colores para tipos de eventos */
+    .badge-alarma { background: #ffebee; color: #c62828; padding: 3px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold; }
+    .badge-audit { background: #e3f2fd; color: #1565c0; padding: 3px 8px; border-radius: 12px; font-size: 0.8em; }
+    .badge-conn { background: #e8f5e9; color: #2e7d32; padding: 3px 8px; border-radius: 12px; font-size: 0.8em; }
+  </style>
+</head>
+<body>
+
+  <header class="header-main">
+    <div class="header-title">HI-Sens | <span class="user-role-display"></span></div>
+    <div class="header-user">
+      <a href="perfil.html">Mi Perfil</a>
+      <a href="login.html">Salir</a>
+    </div>
+  </header>
+  
+  <nav class="nav-main">
+    <a href="index.html">Inicio</a>
+    <a href="config.html" data-role="Admin">Configuración</a>
+    <a href="nodos.html" data-role="Admin">Nodos</a>
+    <a href="registros.html" class="active" data-role="Admin">Registros</a>
+    <a href="usuarios.html" data-role="Admin">Usuarios</a>
+    <a href="alarmas.html" data-role="Tecnico">Alarmas</a>
+  </nav>
+
+  <main>
+    <div class="content-box">
+      <h1>Historial y Auditoría</h1>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="alarmas">🚨 Alarmas</button>
+        <button class="tab-btn" data-tab="auditoria">👮 Auditoría (Cambios)</button>
+        <button class="tab-btn" data-tab="conexiones">📡 Conexiones</button>
+        <button class="tab-btn" data-tab="accesos">🔑 Accesos (Login)</button>
+      </div>
+
+      <div class="filters-bar">
+        <div class="filter-group">
+            <label>Desde:</label>
+            <input type="date" id="filter-date-from" class="styled-input">
+        </div>
+        <div class="filter-group">
+            <label>Hasta:</label>
+            <input type="date" id="filter-date-to" class="styled-input">
+        </div>
+        
+        <div class="filter-group" id="dynamic-filter-group">
+            <label id="dynamic-filter-label">ID Sensor:</label>
+            <input type="text" id="filter-dynamic" class="styled-input" placeholder="Opcional...">
+        </div>
+
+        <button class="btn btn-primary" id="btn-search">🔍 Buscar</button>
+        <button class="btn btn-secondary" id="btn-export" style="background-color: #28a745; color: white;">📥 Exportar Excel/CSV</button>
+      </div>
+
+      <div class="table-container">
+        <table class="styled-table" id="logs-table">
+          <thead>
+            <tr id="table-headers">
+              </tr>
+          </thead>
+          <tbody id="table-body">
+             <tr><td colspan="4" style="text-align:center">Selecciona filtros y busca...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script src="auth-nav.js"></script>
+  <script src="registros.js"></script>
+</body>
+</html>

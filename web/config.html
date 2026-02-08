@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>HI-SENS – Configuración</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <header class="header-main">
+    <div class="header-title">
+      HI-Sens | <span class="user-role-display"></span>
+    </div>
+    <div class="header-user">
+      <a href="#">Configurar Usuario</a>
+      <a href="login.html">Cerrar Sesión</a>
+    </div>
+  </header>
+  
+  <nav class="nav-main">
+    <a href="index.html">Inicio</a>
+    <a href="config.html" class="active" data-role="Admin">Configuración</a>
+    <a href="nodos.html" data-role="Admin">Nodos</a>
+    <a href="registros.html" data-role="Admin">Registros</a>
+    <a href="usuarios.html" data-role="Admin">Usuarios</a>
+    <a href="alarmas.html" data-role="Tecnico">Alarmas</a>
+  </nav>
+
+  <main>
+    <div class="content-box">
+      <h1>Configuración del Sistema</h1>
+      <p>Ajustes globales de comportamiento, seguridad y comunicación.</p>
+
+      <div class="config-grid">
+
+        <div class="config-card">
+          <h2><span class="config-icon">⏱️</span> Comportamiento Global</h2>
+          <form class="styled-form">
+            <div class="input-group">
+              <label for="conf-timeout">Timeout de Desconexión (Segundos)</label>
+              <input type="number" id="conf-timeout">
+              <small>Tiempo sin datos para marcar "Desconectado".</small>
+            </div>
+            <div class="input-group">
+              <label for="conf-silencio">Silencio de Alarmas (Minutos)</label>
+              <input type="number" id="conf-silencio">
+              <small>Tiempo para re-notificar una alarma.</small>
+            </div>
+            <div class="input-group-checkbox">
+              <input type="checkbox" id="conf-sonido">
+              <label for="conf-sonido">Habilitar sonido de alarma</label>
+            </div>
+          </form>
+        </div>
+
+        <div class="config-card">
+          <h2><span class="config-icon">🛡️</span> Seguridad y Retención</h2>
+          <form class="styled-form">
+            <div class="input-group">
+              <label for="conf-sesion">Cierre de Sesión (Minutos)</label>
+              <input type="number" id="conf-sesion">
+            </div>
+            <div class="input-group">
+              <label>Retención de Datos (Días)</label>
+              <div class="input-subgroup">
+                <input type="number" id="conf-ret-conexiones"> <label>Eventos Conexión</label>
+              </div>
+              <div class="input-subgroup">
+                <input type="number" id="conf-ret-auditoria"> <label>Auditoría</label>
+              </div>
+              <div class="input-subgroup">
+                <input type="number" id="conf-ret-accesos"> <label>Accesos</label>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="config-card full-width">
+          <h2><span class="config-icon">✉️</span> Configuración de Email (SMTP)</h2>
+          <p>Servidor de correo saliente para enviar alertas.</p>
+          <form class="styled-form" id="config-form-smtp"> <div class="form-grid-2">
+              <div class="input-group">
+                <label for="smtp-host">Servidor SMTP</label>
+                <input type="text" id="smtp-host" placeholder="smtp.hospital.com">
+              </div>
+              <div class="input-group">
+                <label for="smtp-port">Puerto</label>
+                <input type="number" id="smtp-port" placeholder="587">
+              </div>
+            </div>
+            
+            <div class="form-grid-2">
+              <div class="input-group">
+                <label for="smtp-user">Usuario</label>
+                <input type="text" id="smtp-user">
+              </div>
+              <div class="input-group">
+                <label for="smtp-pass">Contraseña</label>
+                <input type="password" id="smtp-pass">
+              </div>
+            </div>
+            
+            <div class="input-group">
+              <label for="smtp-from">Email Remitente (De:)</label>
+              <input type="email" id="smtp-from">
+            </div>
+            
+            <div class="input-group-checkbox">
+              <input type="checkbox" id="smtp-tls">
+              <label for="smtp-tls">Usar TLS/STARTTLS</label>
+            </div>
+
+            <div class="button-group">
+              <button type="submit" class="btn btn-primary" id="btn-guardar-todo">Guardar Configuración Global</button>
+            </div>
+          </form>
+        </div>
+
+      </div> 
+    </div>
+  </main>
+
+  <script src="auth-nav.js"></script>
+  <script src="config.js"></script> </body>
+</html>
