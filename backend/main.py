@@ -406,6 +406,17 @@ scheduler = AsyncIOScheduler()
 def read_root(): return RedirectResponse(url="/web/login.html")
 
 def seed_database(db: Session):
+    # --- LIMPIEZA MVP: Borrar sensores que no sean Temperatura, Contacto o Voltaje ---
+    tipos_permitidos = ["Temperatura", "Contacto", "Voltaje", "Generico"]
+    sensores_borrar = db.query(Sensor).filter(Sensor.tipo.notin_(tipos_permitidos)).all()
+    if sensores_borrar:
+        print(f"🧹 MVP Cleanup: Borrando {len(sensores_borrar)} sensores no permitidos...")
+        for s in sensores_borrar:
+            db.delete(s)
+        db.commit()
+    # ----------------------------------------------------------------------------- 
+
+
     if db.query(Nodo).count() == 0:
         print("Sembrando datos...")
         nodo_lab = Nodo(id="ESP32-LAB-01", area="Laboratorio", direccion="Roma 123", piso="PB", bateria=95)
@@ -416,7 +427,8 @@ def seed_database(db: Session):
             Sensor(id="LAB-T1", id_nodo="ESP32-LAB-01", nombre_tarjeta="Heladera 1", tipo="Temperatura", unidad="°C", limite_alto=6, limite_bajo=-0.5),
             Sensor(id="LAB-T2", id_nodo="ESP32-LAB-01", nombre_tarjeta="Heladera 2", tipo="Temperatura", unidad="°C", limite_alto=8, limite_bajo=2),
             Sensor(id="LAB-P1", id_nodo="ESP32-LAB-01", nombre_tarjeta="Puerta Lab", tipo="Contacto", unidad="", limite_alto=0.5, limite_bajo=None), # 0=Cerrada, 1=Abierta
-            Sensor(id="QRF-PRE", id_nodo="ESP32-QRF-01", nombre_tarjeta="Presión 1", tipo="Presión Dif.", unidad="Pa", limite_alto=15, limite_bajo=5)
+            # [MVP] Agregamos un sensor de Voltaje como ejemplo
+            Sensor(id="UPS-V1", id_nodo="ESP32-LAB-01", nombre_tarjeta="Voltaje UPS", tipo="Voltaje", unidad="V", limite_alto=240, limite_bajo=210)
         ]
         db.add_all(sensores)
         db.commit()
