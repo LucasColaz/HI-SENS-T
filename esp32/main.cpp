@@ -6,7 +6,6 @@
 #include <WiFi.h>
 #include <WiFiMulti.h>
 
-
 // ---------------- CONFIGURACIÓN DE USUARIO ----------------
 const char *SSID_WIFI = "HI Publica";
 const char *PASS_WIFI = "Italiano";
@@ -105,33 +104,40 @@ void enviarDatos() {
   // 2. Leer Voltaje
   float voltaje = leerVoltajeAC();
 
-  // 3. Crear JSON
-  DynamicJsonDocument doc(1024);
+  // 3. Crear el documento JSON (Capacidad para 2 objetos)
+  // Calculadora: 2 objetos * 150 bytes c/u + extra = 512 bytes sobrados
+  DynamicJsonDocument doc(512);
+
+  // Convertimos el documento en un Array (Lista [])
   JsonArray array = doc.to<JsonArray>();
 
-  // Objeto Temperatura
+  // --- OBJETO 1: TEMPERATURA ---
   JsonObject objTemp = array.createNestedObject();
-  objTemp["id_nodo"] = "ESP32-LAB-01"; // Identificación del nodo
-  objTemp["id_sensor"] = "TEMP-REAL-01";
-  objTemp["tipo"] = "TEMPERATURA";
-  objTemp["valor"] = tempC;
-  objTemp["ubicacion"] = "Laboratorio Real";
+  objTemp["id_nodo"] = "ESP32-LAB-01";       // <-- OBLIGATORIO
+  objTemp["id_sensor"] = "TEMP-DS18B20";     // <-- OBLIGATORIO
+  objTemp["tipo"] = "TEMPERATURA";           // <-- OBLIGATORIO
+  objTemp["valor"] = tempC;                  // Variable float
+  objTemp["ubicacion"] = "Laboratorio Real"; // Opcional
 
-  // Objeto Voltaje
+  // --- OBJETO 2: VOLTAJE ---
   JsonObject objVolt = array.createNestedObject();
-  objVolt["id_nodo"] = "ESP32-LAB-01"; // Identificación del nodo
-  objVolt["id_sensor"] = "VOLT-REAL-01";
-  objVolt["tipo"] = "VOLTAJE";
-  objVolt["valor"] = voltaje;
-  objVolt["ubicacion"] = "Laboratorio Real";
+  objVolt["id_nodo"] = "ESP32-LAB-01";       // <-- OBLIGATORIO
+  objVolt["id_sensor"] = "VOLT-ZMPT101";     // <-- OBLIGATORIO
+  objVolt["tipo"] = "VOLTAJE";               // <-- OBLIGATORIO
+  objVolt["valor"] = voltaje;                // Variable float
+  objVolt["ubicacion"] = "Laboratorio Real"; // Opcional
 
-  // 4. Enviar por Socket
-  String output;
-  serializeJson(doc, output);
-  socket.emit("dato_sensor", output.c_str());
+  // 4. Serializar (Convertir a Texto)
+  String jsonString;
+  serializeJson(doc, jsonString);
 
-  Serial.print("Enviado: ");
-  Serial.println(output);
+  // 5. Enviar por Socket.IO
+  if (socket.isConnected()) {
+    socket.emit("dato_sensor", jsonString.c_str());
+    Serial.println("📤 Datos enviados: " + jsonString);
+  } else {
+    Serial.println("❌ Error: No hay conexión para enviar datos");
+  }
 }
 
 void loop() {
