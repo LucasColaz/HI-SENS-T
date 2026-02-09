@@ -410,6 +410,36 @@ app.mount("/web", StaticFiles(directory="web"), name="web")
 # Scheduler (Planificador)
 scheduler = AsyncIOScheduler()
 
+@sio.on('dato_sensor')
+async def handle_sensor_data(sid, data):
+    print(f"📩 DEBUG - Dato Recibido: {data}")  # <--- VEREMOS QUÉ LLEGA
+
+    try:
+        # Si llega una lista (varios sensores)
+        if isinstance(data, list):
+            for item in data:
+                # Parche temporal por si se nos olvida el id_nodo en el ESP32
+                if "id_nodo" not in item:
+                    item["id_nodo"] = "ESP32-GENERICO-FIX" # Relleno automático
+                
+                # Aquí llamarías a tu lógica de guardar
+                # await crear_registro(item) 
+                print(f"✅ Procesando sensor: {item.get('id_sensor')}")
+
+        # Si llega un objeto único
+        elif isinstance(data, dict):
+            if "id_nodo" not in data:
+                data["id_nodo"] = "ESP32-GENERICO-FIX"
+            
+            # await crear_registro(data)
+            print(f"✅ Procesando sensor único: {data.get('id_sensor')}")
+
+    except Exception as e:
+        # ESTO ES LO IMPORTANTE: Capturamos el error para no desconectar
+        print(f"❌ ERROR CRÍTICO PROCESANDO DATA: {e}")
+        import traceback
+        traceback.print_exc()
+
 @app.get("/")
 def read_root(): return RedirectResponse(url="/web/login.html")
 
