@@ -395,7 +395,7 @@ async def ejecutar_limpieza_diaria():
 # --- 6. Inicialización App ---
 app = FastAPI(title="HI-SENS API")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
-sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins="*")
+sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins=['*']) # Permitir todos los orígenes (CORS)
 socket_app = socketio.ASGIApp(sio, app)
 app.mount("/web", StaticFiles(directory="web"), name="web")
 
