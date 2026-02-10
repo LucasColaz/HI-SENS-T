@@ -149,7 +149,125 @@ async function iniciarDashboard() {
 
 // --- GESTIÓN DE SONIDO ---
 function setupSoundSystem() {
+  // Solución al ReferenceError: userRole
+  const userRole = getRole();
+
   const btn = document.getElementById("btn-sound-toggle");
+  if (!btn) return;
+
+  btn.addEventListener("click", () => {
+    isSoundEnabled = !isSoundEnabled;
+    if (isSoundEnabled) {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      beep(0.1, 880, "sine");
+      btn.textContent = "🔊 Sonido ON";
+      btn.classList.add("sound-on");
+      btn.classList.remove("sound-off");
+    } else {
+      stopAlarmLoop();
+      btn.textContent = "🔇 Sonido OFF";
+      btn.classList.remove("sound-on");
+      btn.classList.add("sound-off");
+    }
+  });
+}
+
+function beep(duration, frequency, type) {
+  if (!isSoundEnabled || !audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gainNode = audioCtx.createGain();
+
+  osc.type = type;
+  osc.frequency.value = frequency;
+  osc.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+
+  osc.start();
+  gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+  osc.stop(audioCtx.currentTime + duration);
+}
+
+function checkGlobalAlarmState() {
+  if (activeAlarms > 0) {
+    if (!alarmInterval && isSoundEnabled) {
+      const btn = document.getElementById("btn-sound-toggle");
+      if (btn) btn.classList.add("sound-active");
+      alarmInterval = setInterval(() => {
+        beep(0.2, 1000, "square");
+        setTimeout(() => beep(0.2, 1000, "square"), 300);
+      }, 2000);
+    }
+  } else {
+    stopAlarmLoop();
+  }
+}
+
+function stopAlarmLoop() {
+  if (alarmInterval) {
+    clearInterval(alarmInterval);
+    alarmInterval = null;
+  }
+  const btn = document.getElementById("btn-sound-toggle");
+  if (btn) btn.classList.remove("sound-active");
+}
+
+// --- INDICADOR VISUAL (HEARTBEAT) ---
+function setSystemStatus(isOnline) {
+  const el = document.getElementById("system-heartbeat");
+  if (!el) return;
+  const dot = el.querySelector(".pulse-dot");
+  if (isOnline) {
+    el.style.color = "#28a745";
+    el.innerHTML = '<span class="pulse-dot">●</span> Sistema Online';
+  } else {
+    el.style.color = "#dc3545";
+    el.innerHTML = '<span>⚠️</span> Desconectado';
+  }
+}
+
+function pulseHeartbeat() {
+  const dot = document.querySelector(".pulse-dot");
+  if (dot) {
+    dot.style.transform = "scale(1.5)";
+    setTimeout(() => dot.style.transform = "scale(1)", 200);
+  }
+}
+
+
+// --- CREAR TARJETA ---
+function crearTarjeta(sensorConfig, estadoSensor, areaGlobal, detalleNodo) {
+  const cardId = `card-${sensorConfig.id}`;
+  const userRole = getRole();
+
+  const card = document.createElement("div");
+  card.className = "status-card";
+  card.id = cardId;
+  card.setAttribute("data-location", areaGlobal);
+  card.setAttribute("data-visible", sensorConfig.visible);
+
+  // Header
+  const h2 = document.createElement("h2");
+  h2.textContent = sensorConfig.nombre_tarjeta;
+
+  // Ubicación
+  const subTitle = document.createElement("div");
+  subTitle.className = "card-sublocation";
+  subTitle.style.fontSize = "0.75rem";
+  subTitle.style.color = "#666";
+  subTitle.style.padding = "0 20px 5px 20px";
+  subTitle.style.borderBottom = "1px solid #eee";
+  subTitle.innerHTML = detalleNodo;
+
+  const valorEl = document.createElement("div");
+  valorEl.className = "valor";
+  // AGREGADO PARA DEBUG/FALLBACK (Solicitud Usuario - ID FIJO)
+  valorEl.id = `dato-${sensorConfig.id}`;
+
+  const infoEl = document.createElement("div");
+  infoEl.className = "info";
+
+  // Botón Config (Supervisor)
   if (['Admin', 'Supervisor'].includes(userRole)) {
     const configBtn = document.createElement("button");
     configBtn.className = "card-config-btn";
