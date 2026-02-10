@@ -238,7 +238,8 @@ class ConfiguracionUpdate(BaseModel):
     smtp_tls: bool = False
 
 class ConfiguracionGet(ConfiguracionUpdate):
-    pass
+    sonido_alarma: bool = True
+    sesion_inactividad: int = 30
 
 class RecoveryRequest(BaseModel):
     email: EmailStr
