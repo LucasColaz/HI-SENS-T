@@ -23,6 +23,7 @@ from fastapi.responses import StreamingResponse
 # --- LIBRERÍAS NUEVAS (Email y Scheduler) ---
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from fastapi import Body
 
 # --- 1. Configuración de Base de Datos ---
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://hisens_user:hisens_pass@localhost:5432/hisens_db")
@@ -462,6 +463,26 @@ async def handle_sensor_data(sid, data):
         import traceback
         traceback.print_exc() 
         # ¡NO DESCONECTAMOS! El ESP32 sigue feliz.
+
+# --- EL BUZÓN HTTP (NUEVO) ---
+@app.post("/api/telemetria")
+async def recibir_datos_esp32(datos: list[dict] = Body(...)):
+    print(f"📡 HTTP POST Recibido: {datos}")
+    
+    try:
+        # 1. Reenviar inmediatamente al Dashboard (Frontend)
+        # Esto hace que se vea en tiempo real
+        if sio: # Verificar si sio esta inicializado
+            await sio.emit('dato_sensor', datos)
+        
+        # 2. (Opcional) Aquí guardarías en base de datos
+        # await guardar_en_db(datos)
+        
+        return {"status": "ok", "mensaje": "Datos recibidos y reenviados"}
+        
+    except Exception as e:
+        print(f"❌ Error procesando HTTP: {e}")
+        return {"status": "error", "detalle": str(e)}
 
 @app.get("/")
 def read_root(): return RedirectResponse(url="/web/login.html")
