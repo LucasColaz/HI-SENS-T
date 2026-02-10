@@ -122,10 +122,32 @@ async function iniciarDashboard() {
 
           actualizarTarjeta(cardId, estadoNodos[cardId]);
         } else {
-          console.warn(`⚠️ No encontré tarjeta para ID: ${cardId}. IDs disponibles:`, Object.keys(estadoNodos));
+          console.warn(`⚠️ No encontré tarjeta DINÁMICA para ID: ${cardId}. Intentando fallback estático...`);
+        }
+
+        // B) FALLBACK ESTÁTICO (Solicitado por Usuario para Debug rápido)
+        // Si tienes elementos con ID fijos en tu HTML, esto los actualizará también
+        if (d.tipo === "TEMPERATURA") {
+          const el = document.getElementById("valor-temperatura");
+          if (el) {
+            el.innerText = parseFloat(d.valor).toFixed(1) + " °C";
+            resaltarElemento(el);
+          }
+        } else if (d.tipo === "VOLTAJE") {
+          const el = document.getElementById("valor-voltaje");
+          if (el) {
+            el.innerText = parseFloat(d.valor).toFixed(0) + " V";
+            resaltarElemento(el);
+          }
         }
       });
     });
+
+    // Función auxiliar para resaltar cambios
+    function resaltarElemento(el) {
+      el.style.color = "#00ff00"; // Verde flash
+      setTimeout(() => { el.style.color = ""; }, 500);
+    }
   } catch (e) { console.warn("Socket error", e); }
 }
 
@@ -247,6 +269,8 @@ function crearTarjeta(sensorConfig, estadoSensor, areaGlobal, detalleNodo) {
 
   const valorEl = document.createElement("div");
   valorEl.className = "valor";
+  // AGREGADO PARA DEBUG/FALLBACK (Solicitud Usuario)
+  valorEl.id = `dato-${sensorConfig.id}`;
 
   const infoEl = document.createElement("div");
   infoEl.className = "info";
