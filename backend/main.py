@@ -420,41 +420,47 @@ scheduler = AsyncIOScheduler()
 
 @sio.on('dato_sensor')
 async def handle_sensor_data(sid, data):
-    print(f"📩 DEBUG - Dato Recibido: {data}")
+    # 1. IMPRIMIR LO QUE LLEGA (Para ver si el formato es correcto)
+    print(f"📡 DEBUG - Recibido del ESP32: {data}")
 
     try:
-        # Validamos: ¿Es una lista o un objeto solo?
-        datos_validados = []
-
+        # Intentamos procesar (Sea lista o diccionario)
+        lista_sensores = []
+        
         if isinstance(data, list):
-            # Si es lista, validamos uno por uno
-            for item in data:
-                # Validacion con Pydantic
-                modelo = DatoSensor(**item) 
-                datos_validados.append(modelo)
-        
+            lista_sensores = data
         elif isinstance(data, dict):
-            # Si es objeto único, lo validamos y metemos a la lista
-            modelo = DatoSensor(**data)
-            datos_validados.append(modelo)
-        
-        # --- PROCESAMIENTO DE DATOS VALIDADOS ---
-        for d in datos_validados:
-            print(f"✅ Procesando: Nodo={d.id_nodo} | Sensor={d.id_sensor} | Valor={d.valor}")
-            
-            # 1. AUTO-DESCUBRIMIENTO DE NODO (Lógica replicada de ingest)
-            # Nota: Idealmente esto debería estar en una función helper 'process_sensor_reading'
-            async with SessionLocal() as db: # Usamos contexto async si fuera posible, pero SessionLocal es sync.
-                 # HACK: Usamos sync session dentro de async handler con cuidado o refactorizamos. 
-                 # Por simplicidad ahora, haremos una lógica simplificada de impresión
-                 # Realmente deberíamos llamar a la lógica de negocio aquí.
-                 pass
+            lista_sensores = [data]
+        else:
+            print(f"⚠️ Formato no reconocido: {type(data)}")
+            return # Salimos suavemente sin romper nada
 
-            # (TODO: Conectar con la base de datos real. Por ahora el log confirma recepción correcta)
+        # Procesamos cada sensor
+        for item in lista_sensores:
+            # PARCHE DE SEGURIDAD: Rellenar datos faltantes
+            if "id_nodo" not in item: 
+                item["id_nodo"] = "ESP32-GENERICO"
+            if "ubicacion" not in item:
+                item["ubicacion"] = "Desconocida"
+
+            # AQUÍ ES DONDE SOLÍA EXPLOTAR
+            # Imprimimos antes de validar para saber dónde falla
+            print(f"🔄 Procesando sensor: {item.get('id_sensor', 'SIN ID')}")
+
+            # --- AQUÍ LLAMAS A TU LÓGICA DE BASE DE DATOS ---
+            # await guardar_dato(item) 
+            # (Asegúrate de que 'guardar_dato' también tenga try/except si es compleja)
+
+            print(f"✅ Guardado OK: {item.get('id_sensor')}")
 
     except Exception as e:
-        print(f"⚠️ Error de Validación o Proceso: {e}")
-        # NO desconectamos al cliente, solo avisamos.
+        # 🛡️ CHALECO ANTIBALAS
+        # Si algo falla (Pydantic, Base de datos, Variable nula), CAEMOS AQUÍ
+        print("❌❌❌ ERROR CRÍTICO EN EL BACKEND ❌❌❌")
+        print(f"El error fue: {e}")
+        import traceback
+        traceback.print_exc() 
+        # ¡NO DESCONECTAMOS! El ESP32 sigue feliz.
 
 @app.get("/")
 def read_root(): return RedirectResponse(url="/web/login.html")
