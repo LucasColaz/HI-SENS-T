@@ -110,6 +110,8 @@ async function iniciarDashboard() {
         const id = d.id_sensor || d.id;
         const cardId = `card-${id}`;
 
+        console.log(`🔄 Procesando: ${d.tipo} (${d.valor}) -> Card: ${cardId}`);
+
         if (estadoNodos[cardId]) {
           estadoNodos[cardId].valor = d.valor;
           // Si viene batería, actualizamos
@@ -119,10 +121,21 @@ async function iniciarDashboard() {
           estadoNodos[cardId].conectado = true;
 
           actualizarTarjeta(cardId, estadoNodos[cardId]);
+        } else {
+          console.warn(`⚠️ No encontré tarjeta para ID: ${cardId}. IDs disponibles:`, Object.keys(estadoNodos));
         }
+        estadoNodos[cardId].valor = d.valor;
+        // Si viene batería, actualizamos
+        if (d.bateria_nodo !== undefined) estadoNodos[cardId].bateria = d.bateria_nodo;
+
+        // Si recibimos dato, está conectado
+        estadoNodos[cardId].conectado = true;
+
+        actualizarTarjeta(cardId, estadoNodos[cardId]);
+      }
       });
-    });
-  } catch (e) { console.warn("Socket error", e); }
+  });
+} catch (e) { console.warn("Socket error", e); }
 }
 
 // --- GESTIÓN DE SONIDO ---
