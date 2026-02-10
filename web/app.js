@@ -98,17 +98,29 @@ async function iniciarDashboard() {
     socket.on("connect", () => setSystemStatus(true));
     socket.on("disconnect", () => setSystemStatus(false));
 
-    socket.on("nueva_lectura", (data) => {
+    socket.on("dato_sensor", (data) => {
       // Efecto visual de latido cada vez que llega un dato
       pulseHeartbeat();
+      console.log("📦 Datos recibidos:", data);
 
-      const cardId = `card-${data.id}`;
-      if (estadoNodos[cardId]) {
-        estadoNodos[cardId].valor = data.valor;
-        estadoNodos[cardId].bateria = data.bateria;
-        estadoNodos[cardId].conectado = data.conectado;
-        actualizarTarjeta(cardId, estadoNodos[cardId]);
-      }
+      const lista = Array.isArray(data) ? data : [data];
+
+      lista.forEach(d => {
+        // Backend envía 'id_sensor', el frontend usaba 'id' anteriormente
+        const id = d.id_sensor || d.id;
+        const cardId = `card-${id}`;
+
+        if (estadoNodos[cardId]) {
+          estadoNodos[cardId].valor = d.valor;
+          // Si viene batería, actualizamos
+          if (d.bateria_nodo !== undefined) estadoNodos[cardId].bateria = d.bateria_nodo;
+
+          // Si recibimos dato, está conectado
+          estadoNodos[cardId].conectado = true;
+
+          actualizarTarjeta(cardId, estadoNodos[cardId]);
+        }
+      });
     });
   } catch (e) { console.warn("Socket error", e); }
 }
