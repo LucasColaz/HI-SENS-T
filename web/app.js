@@ -97,57 +97,43 @@ async function iniciarDashboard() {
 
     socket.on("connect", () => setSystemStatus(true));
     socket.on("disconnect", () => setSystemStatus(false));
+    socket.on('dato_sensor', (data) => {
+      // 1. Convertimos lo que llegue en una lista siempre
+      let lista = Array.isArray(data) ? data : [data];
 
-    socket.on("dato_sensor", (data) => {
-      // Efecto visual de latido cada vez que llega un dato
-      pulseHeartbeat();
-      console.log("📦 Datos recibidos:", data);
+      console.log("⚡ Procesando datos...", lista);
 
-      const lista = Array.isArray(data) ? data : [data];
+      lista.forEach(sensor => {
+        // --- CASO 1: TEMPERATURA ---
+        if (sensor.tipo === "TEMPERATURA") {
+          // Buscamos la etiqueta "display-temp"
+          let etiqueta = document.getElementById("display-temp");
 
-      lista.forEach(d => {
-        // Backend envía 'id_sensor', el frontend usaba 'id' anteriormente
-        const id = d.id_sensor || d.id;
-        const cardId = `card-${id}`;
-
-        console.log(`🔄 Procesando: ${d.tipo} (${d.valor}) -> Card: ${cardId}`);
-
-        if (estadoNodos[cardId]) {
-          estadoNodos[cardId].valor = d.valor;
-          // Si viene batería, actualizamos
-          if (d.bateria_nodo !== undefined) estadoNodos[cardId].bateria = d.bateria_nodo;
-
-          // Si recibimos dato, está conectado
-          estadoNodos[cardId].conectado = true;
-
-          actualizarTarjeta(cardId, estadoNodos[cardId]);
-        } else {
-          console.warn(`⚠️ No encontré tarjeta DINÁMICA para ID: ${cardId}. Intentando fallback estático...`);
+          if (etiqueta) {
+            etiqueta.innerText = parseFloat(sensor.valor).toFixed(1) + " °C";
+            etiqueta.classList.remove("text-warning"); // Quita amarillo
+            etiqueta.style.color = "#000000"; // Pone negro (o el color que quieras)
+          } else {
+            console.error("❌ ERROR HTML: No encuentro <h1 id='display-temp'> en Heladera 1");
+          }
         }
 
-        // B) FALLBACK ESTÁTICO (Solicitado por Usuario para Debug rápido)
-        // Si tienes elementos con ID fijos en tu HTML, esto los actualizará también
-        if (d.tipo === "TEMPERATURA") {
-          const el = document.getElementById("valor-temperatura");
-          if (el) {
-            el.innerText = parseFloat(d.valor).toFixed(1) + " °C";
-            resaltarElemento(el);
-          }
-        } else if (d.tipo === "VOLTAJE") {
-          const el = document.getElementById("valor-voltaje");
-          if (el) {
-            el.innerText = parseFloat(d.valor).toFixed(0) + " V";
-            resaltarElemento(el);
+        // --- CASO 2: VOLTAJE ---
+        if (sensor.tipo === "VOLTAJE") {
+          // Buscamos la etiqueta "display-volt"
+          let etiqueta = document.getElementById("display-volt");
+
+          if (etiqueta) {
+            etiqueta.innerText = parseFloat(sensor.valor).toFixed(0) + " V";
+            etiqueta.classList.remove("text-warning");
+            etiqueta.style.color = "#000000";
+          } else {
+            console.error("❌ ERROR HTML: No encuentro <h1 id='display-volt'> en Heladera 2");
           }
         }
       });
     });
-
-    // Función auxiliar para resaltar cambios
-    function resaltarElemento(el) {
-      el.style.color = "#00ff00"; // Verde flash
-      setTimeout(() => { el.style.color = ""; }, 500);
-    }
+  }
   } catch (e) { console.warn("Socket error", e); }
 }
 
@@ -269,8 +255,14 @@ function crearTarjeta(sensorConfig, estadoSensor, areaGlobal, detalleNodo) {
 
   const valorEl = document.createElement("div");
   valorEl.className = "valor";
-  // AGREGADO PARA DEBUG/FALLBACK (Solicitud Usuario)
-  valorEl.id = `dato-${sensorConfig.id}`;
+  // AGREGADO PARA DEBUG/FALLBACK (Solicitud Usuario - ID FIJO)
+  if (sensorConfig.tipo === "TEMPERATURA") {
+    valorEl.id = "display-temp";
+  } else if (sensorConfig.tipo === "VOLTAJE") {
+    valorEl.id = "display-volt";
+  } else {
+    valorEl.id = `dato-${sensorConfig.id}`;
+  }
 
   const infoEl = document.createElement("div");
   infoEl.className = "info";
