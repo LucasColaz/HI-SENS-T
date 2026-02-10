@@ -24,6 +24,7 @@ OneWire oneWire(PIN_DS18B20);
 DallasTemperature sensors(&oneWire);
 SocketIoClient socket;
 WiFiMulti wiFiMulti;
+bool servidorConectado = false;
 
 // Variables globales
 unsigned long lastSendTime = 0;
@@ -54,7 +55,14 @@ void setup() {
 
   // Evento de conexión
   socket.on("connect", [](const char *payload, size_t length) {
-    Serial.println("Conectado al Servidor Railway!");
+    Serial.println("✅ Conectado al Servidor!");
+    servidorConectado = true;
+  });
+
+  // Evento de desconexión
+  socket.on("disconnect", [](const char *payload, size_t length) {
+    Serial.println("❌ Desconectado del Servidor");
+    servidorConectado = false;
   });
 }
 
@@ -132,11 +140,11 @@ void enviarDatos() {
   serializeJson(doc, jsonString);
 
   // 5. Enviar por Socket.IO
-  if (socket.isConnected()) {
+  if (servidorConectado == true) {
     socket.emit("dato_sensor", jsonString.c_str());
-    Serial.println("📤 Datos enviados: " + jsonString);
+    Serial.println("📤 Enviado: " + jsonString);
   } else {
-    Serial.println("❌ Error: No hay conexión para enviar datos");
+    Serial.println("⏳ Esperando conexión para enviar...");
   }
 }
 
