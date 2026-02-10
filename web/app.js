@@ -124,19 +124,11 @@ async function iniciarDashboard() {
         } else {
           console.warn(`⚠️ No encontré tarjeta para ID: ${cardId}. IDs disponibles:`, Object.keys(estadoNodos));
         }
-        estadoNodos[cardId].valor = d.valor;
-        // Si viene batería, actualizamos
-        if (d.bateria_nodo !== undefined) estadoNodos[cardId].bateria = d.bateria_nodo;
-
-        // Si recibimos dato, está conectado
-        estadoNodos[cardId].conectado = true;
-
-        actualizarTarjeta(cardId, estadoNodos[cardId]);
-      }
       });
-  });
-} catch (e) { console.warn("Socket error", e); }
+    });
+  } catch (e) { console.warn("Socket error", e); }
 }
+
 
 // --- GESTIÓN DE SONIDO ---
 function setupSoundSystem() {
