@@ -409,7 +409,8 @@ sio = socketio.AsyncServer(
     logger=True,          # Para ver qué pasa dentro de SocketIO
     engineio_logger=True, # Para ver la conexión a bajo nivel
     ping_timeout=60,      # Esperar hasta 60s antes de desconectar (Paciencia)
-    ping_interval=25      # Preguntar "¿Estás ahí?" cada 25s
+    ping_interval=25,     # Preguntar "¿Estás ahí?" cada 25s
+    allow_eio3=True       # Habilitar compatibilidad con versiones antiguas (Arduino/ESP32)
 )
 socket_app = socketio.ASGIApp(sio)
 app.mount("/socket.io", socket_app) # Montar explícitamente -> Fix 404
