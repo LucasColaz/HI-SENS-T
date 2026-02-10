@@ -98,38 +98,48 @@ async function iniciarDashboard() {
     socket.on("connect", () => setSystemStatus(true));
     socket.on("disconnect", () => setSystemStatus(false));
     socket.on('dato_sensor', (data) => {
-      // 1. Convertimos lo que llegue en una lista siempre
+      // 1. Convertimos a lista siempre
       let lista = Array.isArray(data) ? data : [data];
 
       console.log("⚡ Procesando datos...", lista);
 
       lista.forEach(sensor => {
-        // --- CASO 1: TEMPERATURA ---
-        if (sensor.tipo === "TEMPERATURA") {
-          // Buscamos la etiqueta "display-temp"
-          let etiqueta = document.getElementById("display-temp");
+        // Construimos el ID único que buscamos en el HTML
+        // Si el sensor es LAB-T1, buscamos "dato-LAB-T1"
+        const idElemento = `dato-${sensor.id_sensor}`;
+        const elemento = document.getElementById(idElemento);
 
-          if (etiqueta) {
-            etiqueta.innerText = parseFloat(sensor.valor).toFixed(1) + " °C";
-            etiqueta.classList.remove("text-warning"); // Quita amarillo
-            etiqueta.style.color = "#000000"; // Pone negro (o el color que quieras)
-          } else {
-            console.error("❌ ERROR HTML: No encuentro <h1 id='display-temp'> en Heladera 1");
+        if (elemento) {
+          // Si encontramos la tarjeta, actualizamos el valor
+          let valorTexto = sensor.valor;
+
+          // Formato bonito según el tipo
+          if (sensor.tipo === "TEMPERATURA") {
+            valorTexto = parseFloat(sensor.valor).toFixed(1) + " °C";
+          } else if (sensor.tipo === "VOLTAJE") {
+            valorTexto = parseFloat(sensor.valor).toFixed(0) + " V";
           }
-        }
 
-        // --- CASO 2: VOLTAJE ---
-        if (sensor.tipo === "VOLTAJE") {
-          // Buscamos la etiqueta "display-volt"
-          let etiqueta = document.getElementById("display-volt");
+          elemento.innerText = valorTexto;
 
-          if (etiqueta) {
-            etiqueta.innerText = parseFloat(sensor.valor).toFixed(0) + " V";
-            etiqueta.classList.remove("text-warning");
-            etiqueta.style.color = "#000000";
-          } else {
-            console.error("❌ ERROR HTML: No encuentro <h1 id='display-volt'> en Heladera 2");
+          // Quitamos estilos de advertencia
+          if (elemento.classList.contains("text-warning")) {
+            elemento.classList.remove("text-warning");
+            // Intentar buscar el padre card para actualizar estado
+            const card = elemento.closest(".status-card");
+            if (card) {
+              card.classList.remove("estado-aviso");
+              card.classList.add("estado-ok");
+            }
           }
+
+          // Efecto visual (Flash)
+          elemento.style.transition = "color 0.2s";
+          elemento.style.color = "#28a745"; // Verde
+          setTimeout(() => elemento.style.color = "", 500);
+
+        } else {
+          console.warn(`⚠️ Llegó el sensor [${sensor.id_sensor}] pero no hay tarjeta con id="${idElemento}"`);
         }
       });
     });
@@ -140,133 +150,6 @@ async function iniciarDashboard() {
 // --- GESTIÓN DE SONIDO ---
 function setupSoundSystem() {
   const btn = document.getElementById("btn-sound-toggle");
-  if (!btn) return;
-
-  btn.addEventListener("click", () => {
-    isSoundEnabled = !isSoundEnabled;
-    if (isSoundEnabled) {
-      // Necesario para desbloquear audio en navegadores
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-
-      // Prueba de sonido (beep corto)
-      beep(0.1, 880, "sine");
-
-      btn.textContent = "🔊 Sonido ON";
-      btn.classList.add("sound-on");
-      btn.classList.remove("sound-off");
-    } else {
-      stopAlarmLoop();
-      btn.textContent = "🔇 Sonido OFF";
-      btn.classList.remove("sound-on");
-      btn.classList.add("sound-off");
-    }
-  });
-}
-
-function beep(duration, frequency, type) {
-  if (!isSoundEnabled || !audioCtx) return;
-  const osc = audioCtx.createOscillator();
-  const gainNode = audioCtx.createGain();
-
-  osc.type = type;
-  osc.frequency.value = frequency;
-  osc.connect(gainNode);
-  gainNode.connect(audioCtx.destination);
-
-  osc.start();
-  gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
-  osc.stop(audioCtx.currentTime + duration);
-}
-
-function checkGlobalAlarmState() {
-  // Si hay al menos una alarma activa, iniciamos el loop de sonido
-  if (activeAlarms > 0) {
-    if (!alarmInterval && isSoundEnabled) {
-      // Loop: Beep-Beep cada segundo
-      const btn = document.getElementById("btn-sound-toggle");
-      if (btn) btn.classList.add("sound-active"); // Efecto visual botón
-
-      alarmInterval = setInterval(() => {
-        beep(0.2, 1000, "square"); // Tono agudo
-        setTimeout(() => beep(0.2, 1000, "square"), 300); // Doble beep
-      }, 2000);
-    }
-  } else {
-    stopAlarmLoop();
-  }
-}
-
-function stopAlarmLoop() {
-  if (alarmInterval) {
-    clearInterval(alarmInterval);
-    alarmInterval = null;
-  }
-  const btn = document.getElementById("btn-sound-toggle");
-  if (btn) btn.classList.remove("sound-active");
-}
-
-// --- INDICADOR VISUAL (HEARTBEAT) ---
-function setSystemStatus(isOnline) {
-  const el = document.getElementById("system-heartbeat");
-  if (!el) return; // Validación por si el usuario borró el elemento (aunque acabamos de ver que lo puso)
-  const dot = el.querySelector(".pulse-dot");
-  if (isOnline) {
-    el.style.color = "#28a745";
-    el.innerHTML = '<span class="pulse-dot">●</span> Sistema Online';
-  } else {
-    el.style.color = "#dc3545"; // Rojo
-    el.innerHTML = '<span>⚠️</span> Desconectado';
-  }
-}
-
-function pulseHeartbeat() {
-  const dot = document.querySelector(".pulse-dot");
-  if (dot) {
-    dot.style.transform = "scale(1.5)";
-    setTimeout(() => dot.style.transform = "scale(1)", 200);
-  }
-}
-
-// --- CREAR TARJETA ---
-function crearTarjeta(sensorConfig, estadoSensor, areaGlobal, detalleNodo) {
-  const cardId = `card-${sensorConfig.id}`;
-  const userRole = getRole();
-
-  const card = document.createElement("div");
-  card.className = "status-card";
-  card.id = cardId;
-  card.setAttribute("data-location", areaGlobal);
-  card.setAttribute("data-visible", sensorConfig.visible);
-
-  // Header
-  const h2 = document.createElement("h2");
-  h2.textContent = sensorConfig.nombre_tarjeta;
-
-  // Ubicación
-  const subTitle = document.createElement("div");
-  subTitle.className = "card-sublocation";
-  subTitle.style.fontSize = "0.75rem";
-  subTitle.style.color = "#666";
-  subTitle.style.padding = "0 20px 5px 20px";
-  subTitle.style.borderBottom = "1px solid #eee";
-  subTitle.innerHTML = detalleNodo;
-
-  const valorEl = document.createElement("div");
-  valorEl.className = "valor";
-  // AGREGADO PARA DEBUG/FALLBACK (Solicitud Usuario - ID FIJO)
-  if (sensorConfig.tipo === "TEMPERATURA") {
-    valorEl.id = "display-temp";
-  } else if (sensorConfig.tipo === "VOLTAJE") {
-    valorEl.id = "display-volt";
-  } else {
-    valorEl.id = `dato-${sensorConfig.id}`;
-  }
-
-  const infoEl = document.createElement("div");
-  infoEl.className = "info";
-
-  // Botón Config (Supervisor)
   if (['Admin', 'Supervisor'].includes(userRole)) {
     const configBtn = document.createElement("button");
     configBtn.className = "card-config-btn";
