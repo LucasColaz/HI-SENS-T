@@ -3,7 +3,6 @@
 #include <HTTPClient.h>
 #include <WiFi.h>
 
-
 // --- TUS CREDENCIALES ---
 const char *ssid = "HI Publica";
 const char *password = "Italiano";
@@ -49,16 +48,16 @@ void enviarDatosHTTP() {
 
       JsonObject obj1 = array.createNestedObject();
       obj1["id_nodo"] = "ESP32-LAB-01";
-      obj1["id_sensor"] = "TEMP-001";
+      obj1["id_sensor"] = "LAB-T1"; // Coincide con Dashboard
       obj1["tipo"] = "TEMPERATURA";
-      obj1["valor"] = tempC; // Tu variable real
+      obj1["valor"] = tempC;
       obj1["ubicacion"] = "Laboratorio";
 
       JsonObject obj2 = array.createNestedObject();
       obj2["id_nodo"] = "ESP32-LAB-01";
-      obj2["id_sensor"] = "VOLT-001";
-      obj2["tipo"] = "VOLTAJE";
-      obj2["valor"] = voltaje; // Tu variable real
+      obj2["id_sensor"] = "LAB-T2"; // Coincide con Dashboard
+      obj2["tipo"] = "TEMPERATURA"; // Simulamos que es otra heladera
+      obj2["valor"] = voltaje;      // (Aunque mandamos voltaje por ahora)
       obj2["ubicacion"] = "Laboratorio";
 
       String jsonString;

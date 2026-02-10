@@ -133,7 +133,6 @@ async function iniciarDashboard() {
         }
       });
     });
-  }
   } catch (e) { console.warn("Socket error", e); }
 }
 
